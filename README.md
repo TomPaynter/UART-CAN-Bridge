@@ -18,15 +18,20 @@ After recieving no information for 3 seconds it will automatically revert to nor
 
 ## AT-Commands
 
+Example transmission:
+
+```
++++
+-OK
+AT+SM+123
+-SM+123
+```
+
+
 | AT Command        | Description           | Parameters  |
-| :-------------: |:-------------:| :-----:|
+| :-------------: |-------------| :-----:|
 | **SM** | Set recieve mask | unsigned char |
 | **SF** | Set recieve filter | unsigned char |
 | **DI** | Set default transmit ID | unsigned char |
-| **BF* ** | Set bus frequency | unsigned int |
 
 * = Future Plans
- 
-
-
-
