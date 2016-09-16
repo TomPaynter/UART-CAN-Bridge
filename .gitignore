@@ -1,3 +1,5 @@
 .DS_Store
 .DS_Store*
 /UART-CAN-Bridge.X/nbproject/private/
+/UART-CAN-Bridge.X/build/default/
+/UART-CAN-Bridge.X/dist/default/
