@@ -15,8 +15,6 @@
       <itemPath>main.c</itemPath>
       <itemPath>../PIC18F46K80_Drivers/UART/SRC/UART.c</itemPath>
       <itemPath>../PIC18F46K80_Drivers/UART/SRC/UART.h</itemPath>
-      <itemPath>../PIC18F46K80_Drivers/CAN/src/CAN.c</itemPath>
-      <itemPath>../PIC18F46K80_Drivers/CAN/src/CAN.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -135,6 +133,7 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
+        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
