@@ -3,12 +3,13 @@
 #include "../PIC18F46K80_Drivers/Config_Word/src/configword.h"
 #include "../PIC18F46K80_Drivers/UART/src/UART.h"
 
-unsigned char incomingByte, plusCounter, incData[16], incDataCounter, endCounter, defaultSID = 1;
+unsigned char incomingByte, plusCounter, incData[16], incDataCounter, endCounter, defaultSID = 1, filter[2], mask[2];
 
 enum caseCounter_s {getData, ending1, ending2, done} caseCounter = done;
 
-enum ATTimeout_s {ready, standby, wait, inATMODE} ATTimeout = standby;
-enum ATStatus_s {plus1, plus2, plus3, ATMODE, normal} ATStatus = normal;
+volatile enum ATTimeout_s {ready, standby, wait, inATMODE} ATTimeout = standby;
+volatile enum ATStatus_s {plus1, plus2, plus3, ATMODE, normal} ATStatus = normal;
+volatile enum ATCommandStatus_s {A, T, plus, mask1, mask2, filter1, filter2, ATstandby} ATCommandStatus = ATstandby;
 
 void CAN_Transmit(unsigned char data[8], unsigned int SID, unsigned char DLC) {
   int i;
@@ -107,7 +108,6 @@ void interrupt low_priority LPISR(void)
     ///Timer0
     if(INTCONbits.T0IF && INTCONbits.T0IE) {
         INTCONbits.T0IF = 0;            // Clear the interrupt flag
-                uartTransmitByte('.');
 
         if(ATTimeout == standby) {
           ATTimeout = ready;
@@ -123,11 +123,83 @@ void interrupt low_priority LPISR(void)
           ATTimeoutReset();
         }
 
-        if(ATTimeout == inATMODE) {
+        else if(ATTimeout == inATMODE) {
           ATTimeout = standby;
+          ATStatus = normal;
+
         }
 
     }
+}
+
+void enterATMode(void) {
+    
+      if((incomingByte == '+') && (ATTimeout == ready)) {
+        if(ATStatus == normal) {
+          ATStatus = plus1;
+
+        }
+
+        else if(ATStatus == plus1) {
+          ATStatus = plus2;
+        }
+
+        else if(ATStatus == plus2) {
+          ATStatus = plus3;
+          ATTimeout = wait;
+          ATTimeoutReset();
+        }
+      }
+
+      else {
+        
+        ATTimeoutReset();
+
+      }
+
+}
+
+void runATParser(void) {
+
+
+    if((incomingByte == 'A') && (ATCommandStatus == ATstandby)) {
+        ATCommandStatus = A;
+    }
+
+    if((incomingByte == 'T') && (ATCommandStatus == A)) {
+        ATCommandStatus = T;
+    }
+
+    if((incomingByte == '+') && (ATCommandStatus == T)) {
+        ATCommandStatus = plus;
+    }
+
+    if((incomingByte == 'M') && (ATCommandStatus == plus)) {
+        ATCommandStatus = mask1;
+    }
+
+    else if(ATCommandStatus == mask1) {
+        mask[0] = incomingByte;
+        ATCommandStatus = mask2;
+    }
+    else if(ATCommandStatus == mask2) {
+        mask[1] = incomingByte;
+        ATCommandStatus = ATstandby;
+    }
+
+    if((incomingByte == 'F') && (ATCommandStatus == plus)) {
+        ATCommandStatus = filter1;
+    }
+
+    else if(ATCommandStatus == filter1) {
+        filter[0] = incomingByte;
+        ATCommandStatus = filter2;
+    }
+    else if(ATCommandStatus == filter2) {
+        filter[1] = incomingByte;
+        ATCommandStatus = ATstandby;
+    }
+
 }
 
 int main() {
@@ -138,50 +210,20 @@ T0CON = 0b10000101;
 INTCON = 0b11100000;
 RCONbits.IPEN = 1;
 
-while(1) {
+    while(1) {
 
-    if (uartRecieveByte(&incomingByte)) {
-      if((incomingByte == '+') && (ATTimeout == ready)) {
-        if(ATStatus == normal) {
-          ATStatus = plus1;
-                  uartTransmitByte('A');
+        if (uartRecieveByte(&incomingByte)) {
 
-        }
+            enterATMode();
 
-        else if(ATStatus == plus1) {
-          ATStatus = plus2;
-                  uartTransmitByte('B');
+            if(ATStatus == ATMODE) {
+                runATParser();
+            }
 
-        }
-
-        else if(ATStatus == plus2) {
-          ATStatus = plus3;
-          ATStatus = wait;
-          ATTimeoutReset();
-          uartTransmitByte('C');
+            else {
+                runNormalParser();
+            }
 
         }
-      }
-
-      else {
-        ATTimeout = standby;
-        ATStatus = normal;
-        ATTimeoutReset();
-                uartTransmitByte('D');
-
-      }
-
-      if(ATStatus == ATMODE) {
-        //runATParser();
-                uartTransmitByte('e');
-
-      }
-
-      else {
-        runNormalParser();
-
-      }
-
-}
-}
+    }
 }
