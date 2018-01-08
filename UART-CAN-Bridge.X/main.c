@@ -53,6 +53,11 @@ void interrupt low_priority LPISR(void){
     ///Timer0
     if(INTCONbits.T0IF && INTCONbits.T0IE) {
         INTCONbits.T0IF = 0;            // Clear the interrupt flag
+        
+        unsigned char test[8] = {'0', '1', '2', 'C', 'W', '7', ':', ')'};
+        
+        CAN_Transmit(&test[0], 15, 8);
+
             
         if(ATTimeout == standby) {
           ATTimeout = ready;

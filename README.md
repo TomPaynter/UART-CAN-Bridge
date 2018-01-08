@@ -26,7 +26,7 @@ In order to send a message on another CAN ID it is simply a case of add one or t
 
 The device will know if they are IDs because the DLC will tell how many bytes of the packet are actual data. Also note that only the lower 8 bits of the address are required, if the upper byte is not there it will assume that it was 0.
 
-At this stage the CAN driver is not written to accomodate EIDs but it wouldnt be hard.
+At this stage the CAN driver is not written to accommodate EIDs but it wouldnt be hard.
 
 #AT Command Set
 
